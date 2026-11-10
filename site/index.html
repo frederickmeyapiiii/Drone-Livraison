@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DroneDeliver — Tableau de bord</title>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- BARRE LATERALE (NAVIGATION) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v4M3 12h4M17 12h4M12 17v4M6 6l2.5 2.5M18 6l-2.5 2.5M6 18l2.5-2.5M18 18l-2.5-2.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="3.4" stroke="#fff" stroke-width="1.6"/></svg>
+      <div><div class="brand-name">DroneDeliver</div><div class="brand-sub">Livraisons intelligentes</div></div>
+    </div>
+    
+    <nav class="nav">
+      <a href="#" onclick="switchTab('new-delivery', event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>Nouvelle mission</a>
+      <a href="#" class="active" onclick="switchTab('dashboard', event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1v-9"/></svg>Tableau de bord</a>
+      <a href="#" onclick="switchTab('fleet', event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>Drones</a>
+      <a href="#" onclick="switchTab('settings', event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l-.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Paramètres</a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="status-pill"><span class="dot"></span>Système opérationnel</div>
+      <div class="org">Université de Picardie Jules Verne<br>INSSET – Projet 2026</div>
+    </div>
+  </aside>
+
+  <!-- CONTENU PRINCIPAL -->
+  <main class="main">
+    
+    <!-- EN-TETE TOPBAR -->
+    <div class="topbar">
+      <div class="title">
+        <h1>Centre de Contrôle</h1>
+        <p>Supervision et expédition de missions par drone en temps réel.</p>
+      </div>
+      <div class="top-right">
+        <div class="weather">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6.5 19a4.5 4.5 0 010-9 5.5 5.5 0 0110.6-1.7A4 4 0 0118 16.5"/></svg>
+          <div>
+            <b id="wTemp">--°C</b> <span id="wLoc">Saint-Quentin</span>
+            <div class="loc" id="wDesc">Chargement météo...</div>
+          </div>
+        </div>
+        
+        <div class="server-status" id="server-status-pill">
+          <span id="server-dot"></span>
+          <span id="server-text">Serveur : Vérification...</span>
+        </div>
+
+        <div style="position: relative;">
+          <div class="bell" id="bell-btn" style="cursor: pointer;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+            <span class="dot-red" id="notif-badge"></span>
+          </div>
+
+          <div id="notif-popover">
+            <div style="padding: 12px; font-weight: bold; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; justify-content: space-between;">
+              <span>Notifications</span>
+              <a href="#" onclick="clearNotifications(); return false;" style="font-size: 11px; color: var(--blue);">Effacer</a>
+            </div>
+            <div id="notif-list" style="max-height: 250px; overflow-y: auto; padding: 6px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLEAU DE BORD (SUIVI & DRONE) -->
+    <section id="tab-dashboard" class="tab-content active">
+      <div class="grid" style="grid-template-columns: 1fr 320px;">
+        
+        <!-- 1. Carte & Suivi en temps réel -->
+        <div class="card map-card" id="sec-tracking">
+          <div class="map-legend">
+            <div><span class="leg-dot" style="background:#16a34a"></span>Drone</div>
+            <div><span class="leg-line" style="border-color:#2563eb"></span>Trajet prévu</div>
+            <div><span class="leg-dot" style="background:#dc2626"></span>Destination</div>
+          </div>
+          <div id="map"></div>
+        </div>
+
+        <!-- 2. Télémétrie Drone -->
+        <div>
+          <div class="card drone-card">
+            <h2>
+              <span class="ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/></svg>
+              </span>
+              Drone #01
+              <span class="status-badge" id="drone-status-pill">
+                <span class="dot" id="drone-dot"></span>
+                <span id="drone-status-text">En attente...</span>
+              </span>
+            </h2>
+
+            <div class="drone-photo">
+              <img src="https://tse2.mm.bing.net/th/id/OIP.is6-2hIpAxXXSi5Kgnx28AHaEB?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Drone #01">
+            </div>
+
+            <div class="mission-label" id="mission-label">Statut du système</div>
+            <div class="mission-id" id="mission-id">En attente de données télémétriques...</div>
+
+            <div class="timeline">
+              <div class="tl-item" id="step-1"><div class="tl-dot"></div><div class="tl-text">Décollage</div><div class="tl-time" id="time-step-1">--:--</div></div>
+              <div class="tl-item" id="step-2"><div class="tl-dot"></div><div class="tl-text">En route</div><div class="tl-time" id="time-step-2">--:--</div></div>
+              <div class="tl-item" id="step-3"><div class="tl-dot"></div><div class="tl-text">Livraison</div><div class="tl-time" id="time-step-3">--:--</div></div>
+              <div class="tl-item" id="step-4"><div class="tl-dot"></div><div class="tl-text">Retour</div><div class="tl-time" id="time-step-4">--:--</div></div>
+              <div class="tl-item" id="step-5"><div class="tl-dot"></div><div class="tl-text">Atterrissage</div><div class="tl-time" id="time-step-5">--:--</div></div>
+            </div>
+
+            <div class="stat-grid">
+              <div class="stat"><svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8"><path d="M12 19V5M6 11l6-6 6 6"/></svg><div><div class="l">Altitude</div><div class="v" id="val-alt">-- m</div></div></div>
+              <div class="stat"><svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8"><path d="M13 2L3 14h7l-1 8 11-14h-7z"/></svg><div><div class="l">Vitesse</div><div class="v" id="val-speed">-- m/s</div></div></div>
+              <div class="stat"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8"><rect x="4" y="7" width="14" height="10" rx="2"/><path d="M18 10h2v4h-2"/></svg><div><div class="l">Batterie</div><div class="v" id="val-bat">-- %</div></div></div>
+              <div class="stat"><svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8"><path d="M5 19l4-10 4 6 3-4 3 8"/></svg><div><div class="l">GPS</div><div class="v" id="val-gps">-- sat</div></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 3. Historique -->
+      <div class="card table-card" id="sec-history">
+        <div class="table-head">
+          <h2><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg></span>Historique des livraisons</h2>
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>Date</th><th>Destinataire / Adresse</th><th>Statut</th><th>Action</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ONGLET NOUVELLE MISSION (PAGE DÉDIÉE) -->
+    <section id="tab-new-delivery" class="tab-content">
+      <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <h2><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></span>Planifier une Nouvelle Mission</h2>
+        <p style="color: var(--muted); font-size: 13.5px; margin-bottom: 20px;">Renseignez les paramètres de vol pour expédier le drone vers une destination à Saint-Quentin.</p>
+        
+        <label>Destinataire</label>
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input id="recipient-name" placeholder="Ex: Jean Dupont">
+        </div>
+
+        <label>Départ</label>
+        <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg><input id="from" value="INSSET, Saint-Quentin" readonly></div>
+        
+        <label>Destination (02100)</label>
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+          <input id="to" placeholder="Rechercher une adresse..." autocomplete="off" list="address-suggestions">
+          <datalist id="address-suggestions"></datalist>
+        </div>
+        <div class="info-eta">
+          Trajet estimé : <strong id="val-eta" style="color: var(--blue-dark);">-- min -- s</strong>
+        </div>
+        
+        <label>Type de colis</label>
+        <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>
+          <select id="package-type"><option>Petit colis (&lt; 1 kg)</option><option>Colis moyen (1–3 kg)</option><option>Colis lourd (3–5 kg)</option></select>
+        </div>
+        
+        <label>Priorité</label>
+        <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l1.8 5.6H20l-4.6 3.4 1.8 5.6L12 13.2 6.8 16.6l1.8-5.6L4 8h6.2z"/></svg>
+          <select id="priority-level"><option>Normale</option><option>Urgente</option><option>Basse</option></select>
+        </div>
+        
+        <label>Instructions (optionnel)</label>
+        <textarea id="instructions" placeholder="Ex : code porte, point précis..."></textarea>
+        
+        <div id="form-error-msg"></div>
+        <button class="send-btn" onclick="sendMission()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>Lancer la mission</button>
+      </div>
+    </section>
+
+    <!-- ONGLET FLOTTE DE DRONES -->
+    <section id="tab-fleet" class="tab-content">
+      <div class="card">
+        <h2><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>Gestion de la Flotte</h2>
+        <p style="color: var(--muted); margin-bottom: 20px;">Supervision centralisée des vecteurs aériens de l'INSSET.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: var(--card);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <strong style="font-size: 16px;">Drone #01</strong>
+              <span class="status-badge" id="fleet-status-1" style="background: #dcfce7; color: #15803d;">En attente</span>
+            </div>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">Modèle : DJI Matrice 30T<br>Autonomie : -- min | Max : -- kg</p>
+            <div style="font-size: 13px; margin-bottom: 15px;">Batterie : <b id="fleet-bat-1">-- %</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ONGLET PARAMETRES -->
+    <section id="tab-settings" class="tab-content">
+      <div class="card" style="max-width: 650px;">
+        <h2><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l-.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></span>Paramètres de la Station</h2>
+        
+        <label style="margin-top: 15px;">URL Backend Python</label>
+        <div class="field"><input value="http://127.0.0.1:5000"></div>
+
+        <label style="margin-top: 15px;">Altitude Maximale (m)</label>
+        <div class="field"><input type="number" value="120"></div>
+
+        <button class="send-btn" style="margin-top: 20px;" onclick="alert('Configurations enregistrées !')">Sauvegarder</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODALE AIDE -->
+<div id="help-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+  <div style="background:var(--card); padding:24px; border-radius:16px; max-width:400px; width:90%; position:relative;">
+    <h3 style="margin-bottom:10px;">Support INSSET</h3>
+    <p style="font-size:14px; color:var(--muted); line-height:1.5; margin-bottom:15px;">
+      Contact technique : support@insset.upjv.fr<br>Urgence Station : 03 23 62 88 00
+    </p>
+    <button class="send-btn" onclick="closeHelpModal()">Fermer</button>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script.js"></script>
+<script>
+function openHelpModal() { document.getElementById('help-modal').style.display = 'flex'; }
+function closeHelpModal() { document.getElementById('help-modal').style.display = 'none'; }
+</script>
+</body>
+</html>
